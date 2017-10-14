@@ -6,11 +6,20 @@
 
 #
 #-------------------------------------------------------------------------------
+from __future__ import print_function
 from __future__ import division
-from Tkinter import *
-import tkMessageBox
+try:
+    # for Python2
+    from Tkinter import *   ## notice capitalized T in Tkinter
+except ImportError:
+    # for Python3
+    from tkinter import *   ## notice lowercase 't' in tkinter here
+try:
+    from tkinter import ttk
+except ImportError:
+    import ttk
+
 from PIL import Image, ImageTk
-import ttk
 import os
 import glob
 import random
@@ -157,7 +166,7 @@ class LabelTool():
         self.imageList = glob.glob(os.path.join(self.imageDir, '*.JPG'))
         #print self.imageList
         if len(self.imageList) == 0:
-            print 'No .JPG images found in the specified dir!'
+            print('No .JPG images found in the specified dir!')
             return
 
         # default to the 1st image in the collection
@@ -172,7 +181,7 @@ class LabelTool():
         # load example bboxes
         #self.egDir = os.path.join(r'./Examples', '%03d' %(self.category))
         self.egDir = os.path.join(r'./Examples/demo')
-        print os.path.exists(self.egDir)
+        print(os.path.exists(self.egDir))
         if not os.path.exists(self.egDir):
             return
         filelist = glob.glob(os.path.join(self.egDir, '*.JPG'))
@@ -190,7 +199,7 @@ class LabelTool():
             self.egLabels[i].config(image = self.egList[-1], width = SIZE[0], height = SIZE[1])
 
         self.loadImage()
-        print '%d images loaded from %s' %(self.total, s)
+        print('%d images loaded from %s' %(self.total, s))
 
     def loadImage(self):
         # load image
@@ -232,7 +241,7 @@ class LabelTool():
             f.write('%d\n' %len(self.bboxList))
             for bbox in self.bboxList:
                 f.write(' '.join(map(str, bbox)) + '\n')
-        print 'Image No. %d saved' %(self.cur)
+        print('Image No. %d saved' %(self.cur))
 
 
     def mouseClick(self, event):
@@ -310,7 +319,7 @@ class LabelTool():
 
     def setClass(self):
     	self.currentLabelclass = self.classcandidate.get()
-    	print 'set label class to :',self.currentLabelclass
+    	print('set label class to :',self.currentLabelclass)
 
 ##    def setImage(self, imagepath = r'test2.png'):
 ##        self.img = Image.open(imagepath)
