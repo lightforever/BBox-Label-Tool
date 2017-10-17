@@ -25,7 +25,7 @@ import itertools as it, glob
 import random
 
 # colors for the bboxes
-COLORS = ['red', 'blue', 'olive', 'teal', 'cyan', 'green', 'black']
+COLORS = ['#FF0000', '#0000FF', '#556b2f', '#008080', '#00FFFF', '#008000', '#000000']
 # image sizes for the examples
 SIZE = 256, 256
 
