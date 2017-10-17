@@ -21,13 +21,17 @@ except ImportError:
 
 from PIL import Image, ImageTk
 import os
-import glob
+import itertools as it, glob
 import random
 
 # colors for the bboxes
 COLORS = ['red', 'blue', 'olive', 'teal', 'cyan', 'green', 'black']
 # image sizes for the examples
 SIZE = 256, 256
+
+
+def multiple_file_types(dir, patterns):
+    return list(it.chain.from_iterable(glob.iglob(os.path.join(dir, pattern)) for pattern in patterns))
 
 class LabelTool():
     def __init__(self, master):
@@ -163,7 +167,10 @@ class LabelTool():
         self.imageDir = os.path.join(r'./Images', '%03d' %(self.category))
         #print self.imageDir 
         #print self.category
-        self.imageList = glob.glob(os.path.join(self.imageDir, '*.JPG'))
+
+        IMG_EXTENSIONS = ['*.jpg','*.jpeg','*.JPG','*.JPEG', '*.png','*.PNG','*.giff','*.GIFF', '*.bmp','*.BMP']
+
+        self.imageList = multiple_file_types(self.imageDir, IMG_EXTENSIONS)
         #print self.imageList
         if len(self.imageList) == 0:
             print('No .JPG images found in the specified dir!')
@@ -184,7 +191,7 @@ class LabelTool():
         print(os.path.exists(self.egDir))
         if not os.path.exists(self.egDir):
             return
-        filelist = glob.glob(os.path.join(self.egDir, '*.JPG'))
+        filelist = multiple_file_types(self.egDir, IMG_EXTENSIONS)
         self.tmp = []
         self.egList = []
         random.shuffle(filelist)
@@ -203,18 +210,24 @@ class LabelTool():
 
     def loadImage(self):
         # load image
+        self.imagename = ''
+        self.labelfilename = ''
+
         imagepath = self.imageList[self.cur - 1]
         self.img = Image.open(imagepath)
         self.tkimg = ImageTk.PhotoImage(self.img)
+
         self.mainPanel.config(width = max(self.tkimg.width(), 400), height = max(self.tkimg.height(), 400))
         self.mainPanel.create_image(0, 0, image = self.tkimg, anchor=NW)
         self.progLabel.config(text = "%04d/%04d" %(self.cur, self.total))
 
         # load labels
         self.clearBBox()
+
         self.imagename = os.path.split(imagepath)[-1].split('.')[0]
         labelname = self.imagename + '.txt'
         self.labelfilename = os.path.join(self.outDir, labelname)
+
         bbox_cnt = 0
         if os.path.exists(self.labelfilename):
             with open(self.labelfilename) as f:
@@ -236,7 +249,11 @@ class LabelTool():
                     												  int(tmp[2]), int(tmp[3])))
                     self.listbox.itemconfig(len(self.bboxIdList) - 1, fg = COLORS[(len(self.bboxIdList) - 1) % len(COLORS)])
 
+
+
     def saveImage(self):
+        if self.labelfilename=='':
+            return
         with open(self.labelfilename, 'w') as f:
             f.write('%d\n' %len(self.bboxList))
             for bbox in self.bboxList:
@@ -255,7 +272,10 @@ class LabelTool():
             self.bboxId = None
             self.listbox.insert(END, '%s : (%d, %d) -> (%d, %d)' %(self.currentLabelclass,x1, y1, x2, y2))
             self.listbox.itemconfig(len(self.bboxIdList) - 1, fg = COLORS[(len(self.bboxIdList) - 1) % len(COLORS)])
+            self.saveImage()
+
         self.STATE['click'] = 1 - self.STATE['click']
+
 
     def mouseMove(self, event):
         self.disp.config(text = 'x: %d, y: %d' %(event.x, event.y))
@@ -290,6 +310,7 @@ class LabelTool():
         self.bboxIdList.pop(idx)
         self.bboxList.pop(idx)
         self.listbox.delete(idx)
+        self.saveImage()
 
     def clearBBox(self):
         for idx in range(len(self.bboxIdList)):
@@ -297,6 +318,7 @@ class LabelTool():
         self.listbox.delete(0, len(self.bboxList))
         self.bboxIdList = []
         self.bboxList = []
+        self.saveImage()
 
     def prevImage(self, event = None):
         self.saveImage()
