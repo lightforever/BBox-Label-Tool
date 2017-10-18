@@ -31,7 +31,7 @@ SIZE = 256, 256
 
 
 def multiple_file_types(dir, patterns):
-    return list(it.chain.from_iterable(glob.iglob(os.path.join(dir, pattern)) for pattern in patterns))
+    return list(set(it.chain.from_iterable(glob.iglob(os.path.join(dir, pattern)) for pattern in patterns)))
 
 class LabelTool():
     def __init__(self, master):
